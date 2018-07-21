@@ -1,3 +1,0 @@
-/home/local/USHERBROOKE/beao3002/Bureau/ift630Devoir3/Server/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/local/USHERBROOKE/beao3002/Bureau/ift630Devoir3/Server/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/local/USHERBROOKE/beao3002/Bureau/ift630Devoir3/Server/cmake-build-debug/CMakeFiles/Server.dir
