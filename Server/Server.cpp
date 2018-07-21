@@ -91,7 +91,7 @@ namespace Network
                 Client newClient;
                 if (newClient.init(std::move(newClientSocket), addr))
                 {
-                    auto message = std::make_unique<Messages::Connection>(Messages::Type, Messages::Result);
+                    auto message = std::make_unique<Messages::Connection>(Messages::Type::Connection, Messages::Result::Success);
                     message->idFrom = newClient.id();
                     message->from = newClient.destinationAddress();
                     mMessages.push_back(std::move(message));

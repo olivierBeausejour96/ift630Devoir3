@@ -47,14 +47,14 @@ namespace Network
 
         };
 
-        enum Base Type
+        enum Type
         {
-            Messages::Connection,
-            Messages::Disconnection,
-            Messages::UserData
+            Connection,
+            Disconnection,
+            UserData
         };
 
-        enum Base Result
+        enum Result
         {
             Success
         };
