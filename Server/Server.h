@@ -1,31 +1,36 @@
-//
-// Created by beao3002 on 18-07-21.
-//
+#pragma once
 
-#ifndef SERVER_SERVER_H
-#define SERVER_SERVER_H
+#include <memory>
+#include <Shared/Messages.h>
 
-
-#include <bits/unique_ptr.h>
-
-class Server
+namespace Network
 {
-public:
-    Server();
-    Server(const Server&) = delete;
-    Server& operator=(const Server&) = delete;
-    Server(Server&&);
-    Server& operator=(Server&&);
-    ~Server();
+    namespace Messages {
+        enum class Type;
+        enum class Result;
+    }
+    namespace TCP
+    {
+        class ServerImpl;
+        class Server
+        {
+        public:
+            Server();
+            Server(const Server&) = delete;
+            Server& operator=(const Server&) = delete;
+            Server(Server&&);
+            Server& operator=(Server&&);
+            ~Server();
 
-    bool start(unsigned short _port);
-    void stop();
-    void update();
-    std::unique_ptr<Messages::Base> poll();
+            bool start(unsigned short _port);
+            void stop();
+            void update();
+            bool sendTo(uint64_t clientid, const unsigned char* data, unsigned int len);
+            bool sendToAll(const unsigned char* data, unsigned int len);
+            std::unique_ptr<Messages::Base> poll();
 
-private:
-    std::unique_ptr<Server> mImpl;
-};
-
-
-#endif //SERVER_SERVER_H
+        private:
+            std::unique_ptr<ServerImpl> mImpl;
+        };
+    }
+}
