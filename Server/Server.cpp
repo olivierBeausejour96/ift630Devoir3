@@ -4,7 +4,6 @@
 #include <map>
 #include <list>
 #include <cassert>
-#include <netinet/in.h>
 #include <Client/Client.h>
 
 namespace Network
@@ -91,7 +90,7 @@ namespace Network
                 Client newClient;
                 if (newClient.init(std::move(newClientSocket), addr))
                 {
-                    auto message = std::make_unique<Messages::Connection>(Messages::Type::Connection, Messages::Result::Success);
+                    auto message = std::make_unique<Messages::Connection>(Messages::Connection::Result::Success);
                     message->idFrom = newClient.id();
                     message->from = newClient.destinationAddress();
                     mMessages.push_back(std::move(message));
@@ -110,7 +109,7 @@ namespace Network
                 {
                     msg->from = itClient->second.destinationAddress();
                     msg->idFrom = itClient->second.id();
-                    if (msg->is<Messages::Base>())
+                    if (msg->is<Messages::Disconnection>())
                     {
                         itClient = mClients.erase(itClient);
                     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Shared/Sockets.hpp>
 #include <string>
 #include <memory>
 #include <netinet/in.h>

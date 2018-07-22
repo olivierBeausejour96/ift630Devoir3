@@ -5,14 +5,15 @@
 #ifndef SHARED_MESSAGES_H
 #define SHARED_MESSAGES_H
 
+#include <stdint.h>
+#include <netinet/in.h>
+#include <vector>
+
 
 namespace Network
 {
     namespace Messages
     {
-        enum Base Type;
-        enum Base Result;
-
         class Base
         {
         public:
@@ -22,42 +23,62 @@ namespace Network
             const M* as() const { return static_cast<const M*>(this); }
 
             uint64_t idFrom;
+            sockaddr_in from;
 
-            Base(Type type, Result result)
-                    : mType(type),
-                      mResult(result)
+        protected:
+            enum class Type {
+                Connection,
+                Disconnection,
+                UserData,
+            };
+            Base(Type type)
+                    : mType(type)
             {}
         private:
             Type mType;
-            Result mResult;
         };
 
-        class Connection: Base
-        {
+        class Connection : public Base {
+        public:
+            const static Type StaticType = Type::Connection;
+            enum class Result
+            {
+                Success,
+                Failed
+            };
+            Connection() : Base(StaticType) {}
+            Connection(Result result) : Base(StaticType),
+                                        result(result)
+            {}
 
+
+            Result result;
         };
 
-        class Disconnection: Base
-        {
+        class Disconnection : public Base {
+        public:
+            const static Type StaticType = Type::Disconnection;
+            enum class Reason
+            {
+                Disconnected,
+                Lost
+            };
+            Disconnection() : Base(StaticType) {}
+            Disconnection(Reason reason) : Base(StaticType),
+                                           mReason(reason)
+            {}
 
+        protected:
+            Reason mReason;
         };
 
-        class UserData: Base
-        {
-
+        class UserData : public Base {
+        public:
+            const static Type StaticType = Type::UserData;
+            UserData() : Base(StaticType) {}
+            UserData(std::vector<unsigned char>) : Base(StaticType) {}
         };
 
-        enum Type
-        {
-            Connection,
-            Disconnection,
-            UserData
-        };
-
-        enum Result
-        {
-            Success
-        };
 
     }
 }

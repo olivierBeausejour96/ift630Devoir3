@@ -6,7 +6,7 @@ project(Server)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SOURCE_FILES_SERVER Server/main.cpp Server/Server.h Server/Server.cpp)
+set(SOURCE_FILES_SERVER Server/main.cpp Server/Server.h Server/Server.cpp Client/Client.h Client/Client.cpp)
 add_executable(Server ${SOURCE_FILES_SERVER})
 
 project(Client)

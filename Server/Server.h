@@ -6,8 +6,7 @@
 namespace Network
 {
     namespace Messages {
-        enum Type;
-        enum Result;
+        class Base;
     }
     namespace TCP
     {

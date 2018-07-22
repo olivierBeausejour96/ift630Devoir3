@@ -1,13 +1,15 @@
-#include "TCP/Client.hpp"
-
-#include "Sockets.hpp"
-#include "Messages.hpp"
-#include "Errors.hpp"
-
 #include <vector>
 #include <list>
 #include <cassert>
 #include <numeric>
+#include <bits/unique_ptr.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <arpa/inet.h>
+#include <system_error>
+#include <cstring>
+#include <limits>
+#include "Client.h"
 
 namespace Network
 {
@@ -39,8 +41,8 @@ namespace Network
             mConnectedAddress.sin_port = htons(mPort);
             if (::connect(sckt, (const sockaddr*)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
             {
-                int err = Errors::Get();
-                if (err != Errors::INPROGRESS && err != Errors::WOULDBLOCK)
+                int err = 0;//();
+                if (err != EINPROGRESS && err != EWOULDBLOCK)
                     return false;
             }
             return true;
@@ -154,8 +156,8 @@ namespace Network
             else // ret < 0
             {
                 //!< traitement d'erreur
-                int error = Errors::Get();
-                if (error == Errors::WOULDBLOCK || error == Errors::AGAIN)
+                int error = 0;//();
+                if (error == EWOULDBLOCK || error == EAGAIN)
                 {
                     return nullptr;
                 }
