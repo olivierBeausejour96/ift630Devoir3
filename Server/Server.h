@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <Shared/Messages.h>
+#include <cstdint>
 
 namespace Network
 {

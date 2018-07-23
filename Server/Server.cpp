@@ -84,7 +84,7 @@ namespace Network
             {
                 sockaddr_in addr = { 0 };
                 socklen_t addrlen = sizeof(addr);
-                SOCKET newClientSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&addr), &addrlen);
+                SOCKET newClientSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&addr), (socklen_t*)&addrlen);
                 if (newClientSocket == INVALID_SOCKET)
                     break;
                 Client newClient;

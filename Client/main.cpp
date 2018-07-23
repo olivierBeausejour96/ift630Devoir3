@@ -1,6 +1,13 @@
 #include <iostream>
+#include <Client/Client.h>
 
 int main() {
-    std::cout << "Hello, World2!" << std::endl;
-    return 0;
+
+    Network::TCP::Client qwe;
+
+    if (qwe.connect("127.0.0.1", 23232));
+    {
+        while (true);
+    }
+    std::cout << "ERPPPRROROEROERO\n";
 }

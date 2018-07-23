@@ -9,6 +9,7 @@
 #include <system_error>
 #include <cstring>
 #include <limits>
+#include <sys/socket.h>
 #include "Client.h"
 
 namespace Network
@@ -19,31 +20,61 @@ namespace Network
         {
         public:
             ConnectionHandler() = default;
-            bool connect(SOCKET sckt, const std::string& address, unsigned short port);
+            bool connect(int &sckt, const std::string& address, unsigned short port);
             std::unique_ptr<Messages::Connection> poll();
             const sockaddr_in& connectedAddress() const { return mConnectedAddress; }
 
         private:
             pollfd mFd{ 0 };
-            sockaddr_in mConnectedAddress;
+            struct sockaddr_in mConnectedAddress {0};
             std::string mAddress;
             unsigned short mPort;
         };
-        bool ConnectionHandler::connect(SOCKET sckt, const std::string& address, unsigned short port)
+        bool ConnectionHandler::connect(int &sckt, const std::string& address, unsigned short port)
         {
             assert(sckt != INVALID_SOCKET);
             mAddress = address;
             mPort = port;
             mFd.fd = sckt;
             mFd.events = POLLOUT;
-            inet_pton(AF_INET, mAddress.c_str(), &mConnectedAddress.sin_addr.s_addr);
+            memset(&mConnectedAddress, '0', sizeof(mConnectedAddress));
             mConnectedAddress.sin_family = AF_INET;
             mConnectedAddress.sin_port = htons(mPort);
-            if (::connect(sckt, (const sockaddr*)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
+            /*inet_pton(AF_INET, "127.0.0.1", &mConnectedAddress.sin_addr);
+            int wtf;
+            if (wtf = ::connect(sckt, (struct sockaddr *)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
             {
                 int err = 0;//();
                 if (err != EINPROGRESS && err != EWOULDBLOCK)
                     return false;
+            }
+            return true;*/
+#define PORT 23232
+            int sock;
+            struct sockaddr_in serv_addr;
+            if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+            {
+                printf("\n Socket creation error \n");
+                return false;
+            }
+
+            memset(&serv_addr, '0', sizeof(serv_addr));
+
+            serv_addr.sin_family = AF_INET;
+
+            serv_addr.sin_port = htons(mPort);
+
+            // Convert IPv4 and IPv6 addresses from text to binary form
+            if(inet_pton(AF_INET, "127.0.0.1", &mConnectedAddress.sin_addr)<=0)
+            {
+                printf("\nInvalid address/ Address not supported \n");
+                return false;
+            }
+
+            if (::connect(sckt, (struct sockaddr *)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
+            {
+                printf("\nConnection Failed \n");
+                return false;
             }
             return true;
         }
@@ -356,7 +387,11 @@ namespace Network
             assert(mSocket == INVALID_SOCKET);
             if (mSocket != INVALID_SOCKET)
                 disconnect();
-            mSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            if ((mSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+            {
+                printf("\n Socket creation error \n");
+                return false;
+            }
             if (mSocket == INVALID_SOCKET)
             {
                 return false;
