@@ -48,7 +48,14 @@ int main(int argc, char** argv)
             {
                 auto userdata = msg->as<Network::Messages::UserData>();
                 std::cout << "Reveived Data!\n";
+                std::cout << "Data follows: " << userdata->data.size() << "\n";
+                const unsigned char* qwe = userdata->data.data();
+                printf("%s\n", qwe);//the \n is really important; without it, the string wont print
                 //server.sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
+            }
+            else
+            {
+                std::cout << "Reveived Something!\n";
             }
         }
     }

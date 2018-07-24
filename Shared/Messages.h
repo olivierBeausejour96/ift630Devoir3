@@ -75,8 +75,11 @@ namespace Network
         class UserData : public Base {
         public:
             const static Type StaticType = Type::UserData;
+            std::vector<unsigned char> data;
             UserData() : Base(StaticType) {}
-            UserData(std::vector<unsigned char>) : Base(StaticType) {}
+            UserData(std::vector<unsigned char> _data) : Base(StaticType) {data = _data;}
+
+            
         };
 
 

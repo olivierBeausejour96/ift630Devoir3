@@ -80,7 +80,7 @@ namespace Network
                 return;
 
             //!< accept jusqu'à 10 nouveaux clients
-            for (int accepted = 0; accepted < 10; ++accepted)
+            for (int accepted = 0; accepted < 1; ++accepted)
             {
                 sockaddr_in addr = { 0 };
                 socklen_t addrlen = sizeof(addr);

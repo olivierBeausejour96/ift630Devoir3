@@ -20,7 +20,7 @@ namespace Network
         {
         public:
             ConnectionHandler() = default;
-            bool connect(int &sckt, const std::string& address, unsigned short port);
+            bool connect(SOCKET &&sckt, const std::string& address, unsigned short port);
             std::unique_ptr<Messages::Connection> poll();
             const sockaddr_in& connectedAddress() const { return mConnectedAddress; }
 
@@ -30,26 +30,16 @@ namespace Network
             std::string mAddress;
             unsigned short mPort;
         };
-        bool ConnectionHandler::connect(int &sckt, const std::string& address, unsigned short port)
+        bool ConnectionHandler::connect(SOCKET &&sckt, const std::string& address, unsigned short port)
         {
-            assert(sckt != INVALID_SOCKET);
+            assert(sckt == INVALID_SOCKET);
             mAddress = address;
             mPort = port;
-            mFd.fd = sckt;
+
             mFd.events = POLLOUT;
             memset(&mConnectedAddress, '0', sizeof(mConnectedAddress));
             mConnectedAddress.sin_family = AF_INET;
             mConnectedAddress.sin_port = htons(mPort);
-            /*inet_pton(AF_INET, "127.0.0.1", &mConnectedAddress.sin_addr);
-            int wtf;
-            if (wtf = ::connect(sckt, (struct sockaddr *)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
-            {
-                int err = 0;//();
-                if (err != EINPROGRESS && err != EWOULDBLOCK)
-                    return false;
-            }
-            return true;*/
-#define PORT 23232
             int sock;
             struct sockaddr_in serv_addr;
             if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -65,17 +55,19 @@ namespace Network
             serv_addr.sin_port = htons(mPort);
 
             // Convert IPv4 and IPv6 addresses from text to binary form
-            if(inet_pton(AF_INET, "127.0.0.1", &mConnectedAddress.sin_addr)<=0)
+            if(inet_pton(AF_INET, address.c_str(), &mConnectedAddress.sin_addr)<=0)
             {
                 printf("\nInvalid address/ Address not supported \n");
                 return false;
             }
-
-            if (::connect(sckt, (struct sockaddr *)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
+            sckt = sock;
+            mFd.fd = sckt;
+            if (::connect(sock, (struct sockaddr *)&mConnectedAddress, sizeof(mConnectedAddress)) != 0)
             {
                 printf("\nConnection Failed \n");
                 return false;
             }
+
             return true;
         }
         std::unique_ptr<Messages::Connection> ConnectionHandler::poll()
@@ -187,8 +179,7 @@ namespace Network
             else // ret < 0
             {
                 //!< traitement d'erreur
-                int error = 0;//();
-                if (error == EWOULDBLOCK || error == EAGAIN)
+                if (errno == EWOULDBLOCK || errno == EAGAIN)
                 {
                     return nullptr;
                 }
@@ -387,21 +378,7 @@ namespace Network
             assert(mSocket == INVALID_SOCKET);
             if (mSocket != INVALID_SOCKET)
                 disconnect();
-            if ((mSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-            {
-                printf("\n Socket creation error \n");
-                return false;
-            }
-            if (mSocket == INVALID_SOCKET)
-            {
-                return false;
-            }
-            else if (!SetNonBlocking(mSocket))
-            {
-                disconnect();
-                return false;
-            }
-            if (mConnectionHandler.connect(mSocket, ipaddress, port))
+            if (mConnectionHandler.connect(std::move(mSocket), ipaddress, port))
             {
                 mState = State::Connecting;
                 return true;
