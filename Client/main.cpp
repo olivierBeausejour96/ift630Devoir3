@@ -3,12 +3,27 @@
 #include <string>
 #include <cstring>
 
-int main() {
+int main(int argc, char** argv)
+{
+    /*if (!Network::Start())
+    {
+        //std::cout << "Erreur initialisation WinSock : " << Network::Errors::Get();
+        return -1;
+    }*/
+
+    unsigned short port;
+    if (argc == 1) {
+        std::cout << "Port ? ";
+        std::cin >> port;
+    }
+    else {
+        port = std::stol(argv[1], 0, 10);
+    }
 
     Network::TCP::Client clientTCP;
 
 
-    if (clientTCP.connect("127.0.0.1", 23232));
+    if (clientTCP.connect("127.0.0.1", port));
     {
         char messsage[] = "LOLIPOP";
         char* msg = messsage;
