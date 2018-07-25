@@ -1,6 +1,6 @@
 
 #include "Server.h"
-
+#include <thread>
 #include <map>
 #include <list>
 #include <cassert>
@@ -10,6 +10,8 @@ namespace Network
 {
     namespace TCP
     {
+        //https://bousk.developpez.com/cours/reseau-c++/TCP/05-envoi-reception-serveur/
+        //https://fr.wikipedia.org/wiki/Signal_(informatique)
         class ServerImpl
         {
         public:
@@ -74,19 +76,37 @@ namespace Network
                 CloseSocket(mSocket);
             mSocket = INVALID_SOCKET;
         }
+
+
+
         void ServerImpl::update()
         {
             if (mSocket == INVALID_SOCKET)
                 return;
 
             //!< accept jusqu'à 10 nouveaux clients
-            for (int accepted = 0; accepted < 1; ++accepted)
+            for (int accepted = 0; accepted < 10; ++accepted)
             {
                 sockaddr_in addr = { 0 };
                 socklen_t addrlen = sizeof(addr);
                 SOCKET newClientSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&addr), (socklen_t*)&addrlen);
                 if (newClientSocket == INVALID_SOCKET)
                     break;
+                else{
+                    //HEEELLLPP ME OLIB POUR LES THREADS SA MARCHE PO ?? JUSTE de quoi de simple
+                    //creation dun thread par client
+//                    std::thread([newClientSocket, addr]() {
+//                        const unsigned short clientPort = ntohs(addr.sin_port);
+//                        bool connected = true;
+//                        for(;;)
+//                        {
+//                            char buffer[200] = { 0 };
+//                            int ret = recv(newClientSocket, buffer, 199, 0);
+//                            ret = send(newClientSocket, buffer, ret, 0);
+//                        }
+//                    }).detach();
+
+                }
                 Client newClient;
                 if (newClient.init(std::move(newClientSocket), addr))
                 {

@@ -417,7 +417,6 @@ namespace Network
                             disconnect();
                         }
                     }
-                    return msg;
                 } break;
                 case State::Connected:
                 {

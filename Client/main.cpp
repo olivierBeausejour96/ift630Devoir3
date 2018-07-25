@@ -5,17 +5,17 @@
 
 int main() {
 
-    Network::TCP::Client qwe;
+    Network::TCP::Client clientTCP;
 
 
-    if (qwe.connect("127.0.0.1", 23232));
+    if (clientTCP.connect("127.0.0.1", 23232));
     {
-        char asd[] = "caliss";
-        char* jkl = asd;
+        char messsage[] = "LOLIPOP";
+        char* msg = messsage;
 
-        bool zxc = qwe.send((const unsigned char*)jkl, strlen(jkl));
+        bool isSend = clientTCP.send((const unsigned char*)msg, strlen(msg));
         while (true) {
-            while (auto msg = qwe.poll()) {
+            while (auto msg = clientTCP.poll()) {
                 if (msg->is<Network::Messages::Connection>()) {
                     std::cout << "Received Connection!\n";
                     //std::cout << "Connexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
@@ -24,7 +24,9 @@ int main() {
                     //std::cout << "Deconnexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
                 } else if (msg->is<Network::Messages::UserData>()) {
                     auto userdata = msg->as<Network::Messages::UserData>();
-                    std::cout << "Reveived Data!\n";
+                    std::cout << "Reveived Data from server!\n";
+                    const unsigned char* msgFromServer = userdata->data.data();
+                    printf("%s\n", msgFromServer);
                     //server.sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
                 } else {
                     std::cout << "Reveived Something!\n";
@@ -32,5 +34,4 @@ int main() {
             }
         }
     }
-    std::cout << "ERPPPRROROEROERO\n";
 }
