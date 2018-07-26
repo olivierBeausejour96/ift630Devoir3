@@ -42,18 +42,11 @@ int main(int argc, char** argv)
     if (clientTCP.connect("127.0.0.1", port));
     {
         char* pathFile = "/home/local/USHERBROOKE/lela2601/ift630Devoir3/tp3.zip";
-        std::string line,text;
-        std::ifstream file(pathFile);
-        while(std::getline(file, line))
-        {
-            text += line + "\n";
-        }
-        const char* fileString = text.c_str();
 
         //char message[] = "LOLIPOP";
         //char *msg = message;
 
-        bool isSend = clientTCP.sendFile(reinterpret_cast<const unsigned char *>(fileString), getFileSize(pathFile));
+        bool isSend = clientTCP.sendFile(pathFile);
         //bool isSend = clientTCP.send((const unsigned char*)msg, strlen(msg));
         while (true) {
             while (auto msg = clientTCP.poll()) {

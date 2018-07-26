@@ -78,6 +78,9 @@ namespace Network
                 std::vector<unsigned char> data;
                 UserData() : Base(StaticType) {}
                 UserData(std::vector<unsigned char> _data) : Base(StaticType) {data = _data;}
+                bool isFile;
+                bool morePacket;
+                int fileId;
         };
 
 

@@ -11,6 +11,7 @@
 #include <limits>
 #include <sys/socket.h>
 #include "Client.h"
+#include <fstream>
 
 namespace Network
 {
@@ -202,8 +203,8 @@ namespace Network
             public:
                 SendingHandler() = default;
                 void init(SOCKET sckt);
-                bool send(const unsigned char* data, unsigned int datalen);
-                bool sendFile(const unsigned char* data, unsigned int datalen);
+                bool send(const unsigned char* data, unsigned int len, bool isFile = false, bool morePacket = false, int fileId = 0);
+                bool sendFile(std::string data);
                 void update();
                 size_t queueSize() const;
 
@@ -228,7 +229,7 @@ namespace Network
             mState = State::Idle;
         }
 
-        bool SendingHandler::send(const unsigned char* data, unsigned int datalen)
+        bool SendingHandler::send(const unsigned char* data, unsigned int datalen, bool isFile, bool morePacket, int fileId)
         {
             if (datalen > std::numeric_limits<HeaderType>::max())
                 return false;
@@ -237,12 +238,21 @@ namespace Network
             return true;
         }
 
-        bool SendingHandler::sendFile(const unsigned char* data, unsigned int datalen)
+        bool SendingHandler::sendFile(std::string path)
         {
-            if (datalen > std::numeric_limits<HeaderType>::max())
-                return false;
+            std::ifstream input(path, std::ios::binary );
+            std::ofstream output("./test.test", std::ios::binary);
+            // copies all data into buffer
+            std::vector<char> buffer((std::istreambuf_iterator<char>(input)), (std::istreambuf_iterator<char>()));
+            output.write(buffer.data(), buffer.size());
 
-            mQueueingBuffers.emplace_back(data, data + datalen);
+            int ind = 0;
+            const int packetSize = 1024;
+            while(ind <= buffer.size() - packetSize){
+                send((const unsigned char*)(buffer.data() + ind), packetSize);
+                ind += packetSize;
+            }
+            send((const unsigned char*)(buffer.data() + ind), buffer.size() - ind);
             return true;
         }
 
@@ -340,7 +350,7 @@ namespace Network
                 bool connect(const std::string& ipaddress, unsigned short port);
                 void disconnect();
                 bool send(const unsigned char* data, unsigned int len);
-                bool sendFile(const unsigned char* data, unsigned int len);
+                bool sendFile(std::string data);
                 std::unique_ptr<Messages::Base> poll();
 
                 uint64_t id() const { return static_cast<uint64_t>(mSocket); }
@@ -411,6 +421,11 @@ namespace Network
         bool ClientImpl::send(const unsigned char* data, unsigned int len)
         {
             return mSendingHandler.send(data, len);
+        }
+
+        bool ClientImpl::sendFile(std::string data)
+        {
+            return mSendingHandler.sendFile(data);
         }
 
         std::unique_ptr<Messages::Base> ClientImpl::poll()
@@ -487,7 +502,7 @@ namespace Network
         }
         void Client::disconnect() { if (mImpl) mImpl->disconnect(); }
         bool Client::send(const unsigned char* data, unsigned int len) { return mImpl && mImpl->send(data, len); }
-        bool Client::sendFile(const unsigned char *data, unsigned int len){ return mImpl && mImpl->send(data, len); }
+        bool Client::sendFile(std::string data){ return mImpl && mImpl->sendFile(data); }
         std::unique_ptr<Messages::Base> Client::poll() { return mImpl ? mImpl->poll() : nullptr; }
         uint64_t Client::id() const { return mImpl ? mImpl->id() : 0xffffffffffffffff; }
         const sockaddr_in& Client::destinationAddress() const { static sockaddr_in empty{ 0 }; return mImpl ? mImpl->destinationAddress() : empty; }
