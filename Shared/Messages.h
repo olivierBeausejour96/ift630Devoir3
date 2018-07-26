@@ -16,76 +16,71 @@ namespace Network
     {
         class Base
         {
-        public:
-            template<class M>
-            bool is() const { return mType == M::StaticType; }
-            template<class M>
-            const M* as() const { return static_cast<const M*>(this); }
+            public:
+                template<class M>
+                bool is() const { return mType == M::StaticType; }
+                template<class M>
+                const M* as() const { return static_cast<const M*>(this); }
 
-            uint64_t idFrom;
-            sockaddr_in from;
+                uint64_t idFrom;
+                sockaddr_in from;
 
-        protected:
-            enum class Type {
-                Connection,
-                Disconnection,
-                UserData,
-            };
-            Base(Type type)
-                    : mType(type)
-            {}
-        private:
-            Type mType;
+            protected:
+                enum class Type {
+                    Connection,
+                    Disconnection,
+                    UserData,
+                };
+                Base(Type type)
+                        : mType(type)
+                {}
+            private:
+                Type mType;
         };
 
         class Connection : public Base {
-        public:
-            const static Type StaticType = Type::Connection;
-            enum class Result
-            {
-                Success,
-                Failed
-            };
-            Connection() : Base(StaticType) {}
-            Connection(Result result) : Base(StaticType),
-                                        result(result)
-            {}
+            public:
+                const static Type StaticType = Type::Connection;
+                enum class Result
+                {
+                    Success,
+                    Failed
+                };
+                Connection() : Base(StaticType) {}
+                Connection(Result result) : Base(StaticType),
+                                            result(result)
+                {}
 
 
-            Result result;
+                Result result;
         };
 
         class Disconnection : public Base {
-        public:
-            const static Type StaticType = Type::Disconnection;
-            enum class Reason
-            {
-                Disconnected,
-                Lost
-            };
-            Disconnection() : Base(StaticType) {}
-            Disconnection(Reason reason) : Base(StaticType),
-                                           mReason(reason)
-            {}
+            public:
+                const static Type StaticType = Type::Disconnection;
+                enum class Reason
+                {
+                    Disconnected,
+                    Lost
+                };
+                Disconnection() : Base(StaticType) {}
+                Disconnection(Reason reason) : Base(StaticType),
+                                               mReason(reason)
+                {}
 
-        protected:
-            Reason mReason;
+            protected:
+                Reason mReason;
         };
 
         class UserData : public Base {
-        public:
-            const static Type StaticType = Type::UserData;
-            std::vector<unsigned char> data;
-            UserData() : Base(StaticType) {}
-            UserData(std::vector<unsigned char> _data) : Base(StaticType) {data = _data;}
-
-            
+            public:
+                const static Type StaticType = Type::UserData;
+                std::vector<unsigned char> data;
+                UserData() : Base(StaticType) {}
+                UserData(std::vector<unsigned char> _data) : Base(StaticType) {data = _data;}
         };
 
 
     }
 }
-
-
-
 #endif //SHARED_MESSAGES_H

@@ -23,7 +23,6 @@ int main(int argc, char** argv)
     Network::TCP::Server server;
     if (!server.start(port))
     {
-        //std::cout << "Erreur initialisation serveur : " << Network::Errors::Get();
         return -2;
     }
 

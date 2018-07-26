@@ -16,23 +16,23 @@ namespace Network
         //https://fr.wikipedia.org/wiki/Signal_(informatique)
         class ServerImpl
         {
-        public:
-            ServerImpl() = default;
-            ~ServerImpl();
+            public:
+                ServerImpl() = default;
+                ~ServerImpl();
 
-            bool start(unsigned short _port);
-            void stop();
-            void update();
-            bool sendTo(uint64_t clientid, const unsigned char* data, unsigned int len);
-            bool sendToAll(const unsigned char* data, unsigned int len);
-            std::unique_ptr<Messages::Base> poll();
+                bool start(unsigned short _port);
+                void stop();
+                void update();
+                bool sendTo(uint64_t clientid, const unsigned char* data, unsigned int len);
+                bool sendToAll(const unsigned char* data, unsigned int len);
+                std::unique_ptr<Messages::Base> poll();
 
-        private:
-            std::map<uint64_t, Client> mClients;
-            std::list<std::unique_ptr<Messages::Base>> mMessages;
-
-            SOCKET mSocket{ INVALID_SOCKET };
+            private:
+                std::map<uint64_t, Client> mClients;
+                std::list<std::unique_ptr<Messages::Base>> mMessages;
+                SOCKET mSocket{ INVALID_SOCKET };
         };
+
         ServerImpl::~ServerImpl()
         {
             stop();
@@ -43,6 +43,7 @@ namespace Network
             assert(mSocket == INVALID_SOCKET);
             if (mSocket != INVALID_SOCKET)
                 stop();
+
             mSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             if (mSocket == INVALID_SOCKET)
                 return false;
@@ -71,21 +72,25 @@ namespace Network
             std::thread([this](){
                 while(true) {
                     if (auto msg = this->poll()) {
-                        if (msg->is<Network::Messages::Connection>()) {
+                        if (msg->is<Network::Messages::Connection>())
+                        {
                             std::cout << "Received Connection!\n";
                             //std::cout << "Connexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
-                        } else if (msg->is<Network::Messages::Disconnection>()) {
+                        } else if (msg->is<Network::Messages::Disconnection>())
+                        {
                             std::cout << "Received Disconnection!\n";
                             //std::cout << "Deconnexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
-                        } else if (msg->is<Network::Messages::UserData>()) {
+                        } else if (msg->is<Network::Messages::UserData>())
+                        {
                             auto userdata = msg->as<Network::Messages::UserData>();
                             std::cout << "Reveived Data!\n";
                             std::cout << "Data follows: " << userdata->data.size() << "\n";
                             const unsigned char *msgFromClient = userdata->data.data();
                             printf("%s\n",
-                                   msgFromClient);//the \n is really important; without it, the string wont print
+                            msgFromClient);//the \n is really important; without it, the string wont print
                             this->sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
-                        } else {
+                        } else
+                        {
                             std::cout << "Reveived Something!\n";
                         }
                     }
@@ -93,40 +98,42 @@ namespace Network
             }).detach();
             return true;
         }
+
         void ServerImpl::stop()
         {
             for (auto& client : mClients)
                 client.second.disconnect();
+
             mClients.clear();
             if (mSocket != INVALID_SOCKET)
                 CloseSocket(mSocket);
+
             mSocket = INVALID_SOCKET;
         }
-
-
 
         void ServerImpl::update()
         {
             if (mSocket == INVALID_SOCKET)
                 return;
 
-                sockaddr_in addr = { 0 };
-                socklen_t addrlen = sizeof(addr);
-                SOCKET newClientSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&addr), (socklen_t*)&addrlen);
-                if (newClientSocket == INVALID_SOCKET)
-                    printf("c pas correct sa \n");
-                Client newClient;
-                uint64_t id;
-                if (newClient.init(std::move(newClientSocket), addr))
-                {
-                    auto message = std::make_unique<Messages::Connection>(Messages::Connection::Result::Success);
-                    id = newClient.id();
-                    message->idFrom = newClient.id();
-                    message->from = newClient.destinationAddress();
-                    mMessages.push_back(std::move(message));
-                    mClients[newClient.id()] = std::move(newClient);
-                }
+            sockaddr_in addr = { 0 };
+            socklen_t addrlen = sizeof(addr);
+            SOCKET newClientSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&addr), (socklen_t*)&addrlen);
 
+            if (newClientSocket == INVALID_SOCKET)
+                printf("c pas correct sa \n");
+
+            Client newClient;
+            uint64_t id;
+            if (newClient.init(std::move(newClientSocket), addr))
+            {
+                auto message = std::make_unique<Messages::Connection>(Messages::Connection::Result::Success);
+                id = newClient.id();
+                message->idFrom = newClient.id();
+                message->from = newClient.destinationAddress();
+                mMessages.push_back(std::move(message));
+                mClients[newClient.id()] = std::move(newClient);
+            }
 
             std::thread([this, id](){
                 while(true){
@@ -172,27 +179,31 @@ namespace Network
             mMessages.pop_front();
             return msg;
         }
+
         ////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////Server////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////
         Server::Server() {}
         Server::~Server() {}
         Server::Server(Server&& other)
-                : mImpl(std::move(other.mImpl))
+        : mImpl(std::move(other.mImpl))
         {}
+
         Server& Server::operator=(Server&& other)
         {
             mImpl = std::move(other.mImpl);
             return *this;
         }
+
         bool Server::start(unsigned short _port)
         {
             if (!mImpl)
                 mImpl = std::make_unique<ServerImpl>();
             return mImpl && mImpl->start(_port);
         }
+
         void Server::stop() { if (mImpl) mImpl->stop(); }
         void Server::update() { if (mImpl) mImpl->update(); }
         bool Server::sendTo(uint64_t clientid, const unsigned char* data, unsigned int len) { return mImpl && mImpl->sendTo(clientid, data, len); }

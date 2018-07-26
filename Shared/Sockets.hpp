@@ -29,10 +29,12 @@ namespace Network
         }
         return true;
     }
+
     static bool CloseSocket(SOCKET socketfd) throw()
     {
         close(socketfd);
     }
+
     static bool SetReuseAddr(SOCKET socketfd) throw()
     {
         int enable = 1;
