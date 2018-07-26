@@ -21,4 +21,6 @@ project(Shared)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES_SHARED Shared/Messages.h Shared/Messages.cpp)
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 #add_executable(Shared ${SOURCE_FILES_SHARED})

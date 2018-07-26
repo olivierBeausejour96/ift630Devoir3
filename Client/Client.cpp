@@ -1,4 +1,4 @@
-#include <vector>
+   #include <vector>
 #include <list>
 #include <cassert>
 #include <numeric>
@@ -42,7 +42,7 @@ namespace Network
             mConnectedAddress.sin_port = htons(mPort);
             int sock;
             struct sockaddr_in serv_addr;
-            if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+                if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
             {
                 printf("\n Socket creation error \n");
                 return false;
@@ -364,7 +364,7 @@ namespace Network
                 disconnect();
 
             mSocket = sckt;
-            if (!SetNonBlocking(mSocket))
+            if (!SetReuseAddr(mSocket)|| !SetNonBlocking(mSocket))
             {
                 disconnect();
                 return false;
@@ -417,6 +417,7 @@ namespace Network
                             disconnect();
                         }
                     }
+                    return msg;
                 } break;
                 case State::Connected:
                 {

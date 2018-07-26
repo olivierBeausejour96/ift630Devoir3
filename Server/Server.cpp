@@ -5,6 +5,8 @@
 #include <list>
 #include <cassert>
 #include <Client/Client.h>
+#include <cstring>
+#include <iostream>
 
 namespace Network
 {
@@ -45,7 +47,7 @@ namespace Network
             if (mSocket == INVALID_SOCKET)
                 return false;
 
-            if (!SetReuseAddr(mSocket) || !SetNonBlocking(mSocket))
+            if (!SetReuseAddr(mSocket) )//|| !SetNonBlocking(mSocket))
             {
                 stop();
                 return false;
@@ -65,6 +67,30 @@ namespace Network
                 stop();
                 return false;
             }
+
+            std::thread([this](){
+                while(true) {
+                    if (auto msg = this->poll()) {
+                        if (msg->is<Network::Messages::Connection>()) {
+                            std::cout << "Received Connection!\n";
+                            //std::cout << "Connexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
+                        } else if (msg->is<Network::Messages::Disconnection>()) {
+                            std::cout << "Received Disconnection!\n";
+                            //std::cout << "Deconnexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
+                        } else if (msg->is<Network::Messages::UserData>()) {
+                            auto userdata = msg->as<Network::Messages::UserData>();
+                            std::cout << "Reveived Data!\n";
+                            std::cout << "Data follows: " << userdata->data.size() << "\n";
+                            const unsigned char *msgFromClient = userdata->data.data();
+                            printf("%s\n",
+                                   msgFromClient);//the \n is really important; without it, the string wont print
+                            this->sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
+                        } else {
+                            std::cout << "Reveived Something!\n";
+                        }
+                    }
+                }
+            }).detach();
             return true;
         }
         void ServerImpl::stop()
@@ -84,68 +110,50 @@ namespace Network
             if (mSocket == INVALID_SOCKET)
                 return;
 
-            //!< accept jusqu'à 10 nouveaux clients
-            for (int accepted = 0; accepted < 10; ++accepted)
-            {
                 sockaddr_in addr = { 0 };
                 socklen_t addrlen = sizeof(addr);
                 SOCKET newClientSocket = accept(mSocket, reinterpret_cast<sockaddr*>(&addr), (socklen_t*)&addrlen);
                 if (newClientSocket == INVALID_SOCKET)
-                    break;
-                else{
-                    //HEEELLLPP ME OLIB POUR LES THREADS SA MARCHE PO ?? JUSTE de quoi de simple
-                    //creation dun thread par client
-//                    std::thread([newClientSocket, addr]() {
-//                        const unsigned short clientPort = ntohs(addr.sin_port);
-//                        bool connected = true;
-//                        for(;;)
-//                        {
-//                            char buffer[200] = { 0 };
-//                            int ret = recv(newClientSocket, buffer, 199, 0);
-//                            ret = send(newClientSocket, buffer, ret, 0);
-//                        }
-//                    }).detach();
-
-                }
+                    printf("c pas correct sa \n");
                 Client newClient;
+                uint64_t id;
                 if (newClient.init(std::move(newClientSocket), addr))
                 {
                     auto message = std::make_unique<Messages::Connection>(Messages::Connection::Result::Success);
+                    id = newClient.id();
                     message->idFrom = newClient.id();
                     message->from = newClient.destinationAddress();
                     mMessages.push_back(std::move(message));
                     mClients[newClient.id()] = std::move(newClient);
                 }
-            }
 
-            //!< mise à jour des clients connectés
-            //!< réceptionne au plus 1 message par client
-            //!< supprime de la liste les clients déconnectés
-            for (auto itClient = mClients.begin(); itClient != mClients.end(); )
-            {
-                auto& client = itClient->second;
-                auto msg = client.poll();
-                if (msg)
-                {
-                    msg->from = itClient->second.destinationAddress();
-                    msg->idFrom = itClient->second.id();
-                    if (msg->is<Messages::Disconnection>())
+
+
+            std::thread([this, id](){
+                while(true){
+                    Client &client = this->mClients[id];
+                    auto msg = client.poll();
+                    if (msg)
                     {
-                        itClient = mClients.erase(itClient);
+                        msg->from = client.destinationAddress();
+                        msg->idFrom = client.id();
+                        if (msg->is<Messages::Disconnection>())
+                        {
+                            //TODO: FAUT LE FAIRE SERIEUX LA
+                            //newClient = mClients.erase(itClient);
+                        }
+                        mMessages.push_back(std::move(msg));
                     }
-                    else
-                        ++itClient;
-                    mMessages.push_back(std::move(msg));
                 }
-                else
-                    ++itClient;
-            }
+            }).detach();
         }
+
         bool ServerImpl::sendTo(uint64_t clientid, const unsigned char* data, unsigned int len)
         {
             auto itClient = mClients.find(clientid);
             return itClient != mClients.end() && itClient->second.send(data, len);
         }
+
         bool ServerImpl::sendToAll(const unsigned char* data, unsigned int len)
         {
             bool ret = true;
@@ -153,6 +161,7 @@ namespace Network
                 ret &= client.second.send(data, len);
             return ret;
         }
+
         std::unique_ptr<Messages::Base> ServerImpl::poll()
         {
             if (mMessages.empty())

@@ -32,33 +32,5 @@ int main(int argc, char** argv)
     while(1)
     {
         server.update();
-        while (auto msg = server.poll())
-        {
-            if (msg->is<Network::Messages::Connection>())
-            {
-                std::cout << "Received Connection!\n";
-                //std::cout << "Connexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
-            }
-            else if (msg->is<Network::Messages::Disconnection>())
-            {
-                std::cout << "Received Disconnection!\n";
-                //std::cout << "Deconnexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
-            }
-            else if (msg->is<Network::Messages::UserData>())
-            {
-                auto userdata = msg->as<Network::Messages::UserData>();
-                std::cout << "Reveived Data!\n";
-                std::cout << "Data follows: " << userdata->data.size() << "\n";
-                const unsigned char* msgFromClient = userdata->data.data();
-                printf("%s\n", msgFromClient);//the \n is really important; without it, the string wont print
-                server.sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
-            }
-            else
-            {
-                std::cout << "Reveived Something!\n";
-            }
-        }
     }
-    server.stop();
-    return 0;
 }
