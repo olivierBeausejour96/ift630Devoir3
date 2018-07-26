@@ -203,6 +203,7 @@ namespace Network
                 SendingHandler() = default;
                 void init(SOCKET sckt);
                 bool send(const unsigned char* data, unsigned int datalen);
+                bool sendFile(const unsigned char* data, unsigned int datalen);
                 void update();
                 size_t queueSize() const;
 
@@ -228,6 +229,15 @@ namespace Network
         }
 
         bool SendingHandler::send(const unsigned char* data, unsigned int datalen)
+        {
+            if (datalen > std::numeric_limits<HeaderType>::max())
+                return false;
+
+            mQueueingBuffers.emplace_back(data, data + datalen);
+            return true;
+        }
+
+        bool SendingHandler::sendFile(const unsigned char* data, unsigned int datalen)
         {
             if (datalen > std::numeric_limits<HeaderType>::max())
                 return false;
@@ -474,7 +484,6 @@ namespace Network
                 mImpl = std::make_unique<ClientImpl>();
             return mImpl && mImpl->connect(ipaddress, port);
         }
-
         void Client::disconnect() { if (mImpl) mImpl->disconnect(); }
         bool Client::send(const unsigned char* data, unsigned int len) { return mImpl && mImpl->send(data, len); }
         std::unique_ptr<Messages::Base> Client::poll() { return mImpl ? mImpl->poll() : nullptr; }

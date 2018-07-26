@@ -25,8 +25,12 @@ int main(int argc, char** argv)
 
     if (clientTCP.connect("127.0.0.1", port));
     {
-        char messsage[] = "LOLIPOP";
-        char* msg = messsage;
+        char buffer[100];
+        FILE *f;
+        f=fopen("add.txt","r");
+
+        char file[] = "LOLIPOP";
+        char* msg = file;
 
         bool isSend = clientTCP.send((const unsigned char*)msg, strlen(msg));
         while (true) {

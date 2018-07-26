@@ -14,6 +14,7 @@ namespace Network
     {
         //https://bousk.developpez.com/cours/reseau-c++/TCP/05-envoi-reception-serveur/
         //https://fr.wikipedia.org/wiki/Signal_(informatique)
+        //https://forgetcode.com/c/1201-file-transfer-using-tcp
         class ServerImpl
         {
             public:
