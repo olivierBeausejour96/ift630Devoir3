@@ -128,7 +128,6 @@ namespace Network
                 }
 
 
-
             std::thread([this, id](){
                 while(true){
                     Client &client = this->mClients[id];
@@ -139,8 +138,10 @@ namespace Network
                         msg->idFrom = client.id();
                         if (msg->is<Messages::Disconnection>())
                         {
-                            //TODO: FAUT LE FAIRE SERIEUX LA
-                            //newClient = mClients.erase(itClient);
+                            mClients[id].disconnect();
+                            mClients.erase(id);
+                            mMessages.push_back(std::move(msg));
+                            break;
                         }
                         mMessages.push_back(std::move(msg));
                     }

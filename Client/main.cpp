@@ -42,6 +42,7 @@ int main(int argc, char** argv)
                     std::cout << "Reveived Data from server!\n";
                     const unsigned char* msgFromServer = userdata->data.data();
                     printf("%s\n", msgFromServer);
+                    clientTCP.disconnect();
                     //server.sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
                 } else {
                     std::cout << "Reveived Something!\n";
