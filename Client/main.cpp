@@ -1,7 +1,24 @@
 #include <iostream>
 #include <Client/Client.h>
 #include <string>
+#include <fstream>
 #include <cstring>
+
+int getFileSize(const std::string &fileName)
+{
+    std::ifstream file(fileName.c_str(), std::ifstream::in | std::ifstream::binary);
+
+    if(!file.is_open())
+    {
+        return -1;
+    }
+
+    file.seekg(0, std::ios::end);
+    int fileSize = file.tellg();
+    file.close();
+
+    return fileSize;
+}
 
 int main(int argc, char** argv)
 {
@@ -22,17 +39,22 @@ int main(int argc, char** argv)
 
     Network::TCP::Client clientTCP;
 
-
     if (clientTCP.connect("127.0.0.1", port));
     {
-        char buffer[100];
-        FILE *f;
-        f=fopen("add.txt","r");
+        char* pathFile = "/home/local/USHERBROOKE/lela2601/ift630Devoir3/tp3.zip";
+        std::string line,text;
+        std::ifstream file(pathFile);
+        while(std::getline(file, line))
+        {
+            text += line + "\n";
+        }
+        const char* fileString = text.c_str();
 
-        char file[] = "LOLIPOP";
-        char* msg = file;
+        //char message[] = "LOLIPOP";
+        //char *msg = message;
 
-        bool isSend = clientTCP.send((const unsigned char*)msg, strlen(msg));
+        bool isSend = clientTCP.sendFile(reinterpret_cast<const unsigned char *>(fileString), getFileSize(pathFile));
+        //bool isSend = clientTCP.send((const unsigned char*)msg, strlen(msg));
         while (true) {
             while (auto msg = clientTCP.poll()) {
                 if (msg->is<Network::Messages::Connection>()) {

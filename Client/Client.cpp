@@ -340,6 +340,7 @@ namespace Network
                 bool connect(const std::string& ipaddress, unsigned short port);
                 void disconnect();
                 bool send(const unsigned char* data, unsigned int len);
+                bool sendFile(const unsigned char* data, unsigned int len);
                 std::unique_ptr<Messages::Base> poll();
 
                 uint64_t id() const { return static_cast<uint64_t>(mSocket); }
@@ -486,6 +487,7 @@ namespace Network
         }
         void Client::disconnect() { if (mImpl) mImpl->disconnect(); }
         bool Client::send(const unsigned char* data, unsigned int len) { return mImpl && mImpl->send(data, len); }
+        bool Client::sendFile(const unsigned char *data, unsigned int len){ return mImpl && mImpl->send(data, len); }
         std::unique_ptr<Messages::Base> Client::poll() { return mImpl ? mImpl->poll() : nullptr; }
         uint64_t Client::id() const { return mImpl ? mImpl->id() : 0xffffffffffffffff; }
         const sockaddr_in& Client::destinationAddress() const { static sockaddr_in empty{ 0 }; return mImpl ? mImpl->destinationAddress() : empty; }

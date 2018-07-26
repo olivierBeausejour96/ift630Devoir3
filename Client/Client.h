@@ -32,6 +32,7 @@ namespace Network
                 bool connect(const std::string& ipaddress, unsigned short port);
                 void disconnect();
                 bool send(const unsigned char* data, unsigned int len);
+                bool sendFile(const unsigned char* data, unsigned int len);
                 std::unique_ptr<Messages::Base> poll();
 
                 uint64_t id() const;
