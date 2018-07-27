@@ -3,21 +3,21 @@
 #include <string>
 #include <fstream>
 #include <cstring>
+#include <csignal>
 
-int getFileSize(const std::string &fileName)
+
+Network::TCP::Client clientTCP;
+
+namespace
 {
-    std::ifstream file(fileName.c_str(), std::ifstream::in | std::ifstream::binary);
+    volatile std::sig_atomic_t gSignalStatus;
+}
 
-    if(!file.is_open())
-    {
-        return -1;
-    }
-
-    file.seekg(0, std::ios::end);
-    int fileSize = file.tellg();
-    file.close();
-
-    return fileSize;
+void signal_handler(int signal)
+{
+    clientTCP.disconnect();
+    std::cout << strsignal(signal) << std::endl;
+    exit(signal);
 }
 
 int main(int argc, char** argv)
@@ -27,6 +27,8 @@ int main(int argc, char** argv)
         //std::cout << "Erreur initialisation WinSock : " << Network::Errors::Get();
         return -1;
     }*/
+
+    std::signal(SIGTERM, signal_handler);
 
     auto pid = fork();
     if( pid < 0 )
@@ -47,7 +49,6 @@ int main(int argc, char** argv)
         port = std::stol(argv[1], 0, 10);
     }
 
-    Network::TCP::Client clientTCP;
 
     if (clientTCP.connect("127.0.0.1", port));
     {

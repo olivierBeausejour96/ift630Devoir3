@@ -94,7 +94,7 @@ namespace Network
                                 //new client
                                 fileTransferData.insert(std::make_pair(userdata->idFrom, std::map<int, std::vector<char>>()));
                             }
-                            std::cout << "Reveived Data!\n";
+                            std::cout << "Received Data!\n";
                             std::string qwe;
                             int ind = 0;
                             char m[6];
@@ -133,7 +133,7 @@ namespace Network
                                 //data to file
                                 std::ofstream output(outputPath, std::ios::binary);
                                 output.write(fileTransferData[userdata->idFrom][q].data(), fileTransferData[userdata->idFrom][q].size());
-                                //std::cout << "File transfer completed!\n";
+                                std::cout << "File transfer completed!\n";
                             }
 
                             //printf("%s\n",
