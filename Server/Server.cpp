@@ -133,6 +133,7 @@ namespace Network
                                 //data to file
                                 std::ofstream output(outputPath, std::ios::binary);
                                 output.write(fileTransferData[userdata->idFrom][q].data(), fileTransferData[userdata->idFrom][q].size());
+                                //std::cout << "File transfer completed!\n";
                             }
 
                             //printf("%s\n",

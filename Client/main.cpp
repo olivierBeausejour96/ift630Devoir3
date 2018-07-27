@@ -32,9 +32,11 @@ int main(int argc, char** argv)
     if( pid < 0 )
         std::cout << "Une erreur est subvenue.\nVeuillez contacter votre administrateur réseau pour obtenir du support\n";
         // error out here!
-    if( !pid && execl( "./Server", "./Server", "23232", NULL));
+    if( !pid && execl( "./Server", "./Server", argv[1], NULL));
 
     sleep(1);
+
+    pid = fork();
 
     unsigned short port;
     if (argc == 1) {

@@ -4,7 +4,7 @@
 #include "Server.h"
 
 
-
+Network::TCP::Server server;
 namespace
 {
     volatile std::sig_atomic_t gSignalStatus;
@@ -12,7 +12,8 @@ namespace
 
 void signal_handler(int signal)
 {
-    std::cout << "Received signal: " << strsignal(signal) << std::endl;
+    server.stop();
+    exit(signal);
 }
 
 int main(int argc, char** argv)
@@ -37,7 +38,6 @@ int main(int argc, char** argv)
     }
 
 
-    Network::TCP::Server server;
     if (!server.start(port))
     {
         return -2;
