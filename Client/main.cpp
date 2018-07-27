@@ -22,12 +22,6 @@ void signal_handler(int signal)
 
 int main(int argc, char** argv)
 {
-    /*if (!Network::Start())
-    {
-        //std::cout << "Erreur initialisation WinSock : " << Network::Errors::Get();
-        return -1;
-    }*/
-
     std::signal(SIGTERM, signal_handler);
 
     auto pid = fork();
