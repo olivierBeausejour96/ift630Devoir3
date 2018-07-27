@@ -233,26 +233,31 @@ namespace Network
         {
             if (datalen > std::numeric_limits<HeaderType>::max())
                 return false;
-
-            mQueueingBuffers.emplace_back(data, data + datalen);
+            char qwe[datalen + 6];
+            memset(qwe, 0, datalen+6);
+            memcpy(qwe, &isFile, 1);
+            memcpy(qwe+1, &morePacket, 1);
+            memcpy(qwe+2, &fileId, 4);
+            memcpy(qwe+6, data, datalen);
+            char * asd = qwe;
+            mQueueingBuffers.emplace_back(asd, asd + datalen + 6);
             return true;
         }
 
         bool SendingHandler::sendFile(std::string path)
         {
             std::ifstream input(path, std::ios::binary );
-            std::ofstream output("./test.test", std::ios::binary);
             // copies all data into buffer
             std::vector<char> buffer((std::istreambuf_iterator<char>(input)), (std::istreambuf_iterator<char>()));
-            output.write(buffer.data(), buffer.size());
-
+            static int fgh = 0;
             int ind = 0;
             const int packetSize = 1024;
             while(ind <= buffer.size() - packetSize){
-                send((const unsigned char*)(buffer.data() + ind), packetSize);
+                send((const unsigned char*)(buffer.data() + ind), packetSize, 1, 1, fgh);
                 ind += packetSize;
             }
-            send((const unsigned char*)(buffer.data() + ind), buffer.size() - ind);
+
+            send((const unsigned char*)(buffer.data() + ind), buffer.size() - ind, 1, 0, fgh++);
             return true;
         }
 

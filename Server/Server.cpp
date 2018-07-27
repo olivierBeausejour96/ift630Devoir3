@@ -6,7 +6,8 @@
 #include <cassert>
 #include <Client/Client.h>
 #include <cstring>
-#include <iostream>
+#include <fstream>
+#include <csignal>
 
 namespace Network
 {
@@ -83,13 +84,60 @@ namespace Network
                             //std::cout << "Deconnexion de [" << Network::GetAddress(msg->from) << ":" << Network::GetPort(msg->from) << "]" << std::endl;
                         } else if (msg->is<Network::Messages::UserData>())
                         {
+                            static std::map<uint64_t , std::map<int, std::vector<char>>> fileTransferData;
+
+
+
                             auto userdata = msg->as<Network::Messages::UserData>();
+                            if (fileTransferData.find(userdata->idFrom) == fileTransferData.end())
+                            {
+                                //new client
+                                fileTransferData.insert(std::make_pair(userdata->idFrom, std::map<int, std::vector<char>>()));
+                            }
                             std::cout << "Reveived Data!\n";
-                            std::cout << "Data follows: " << userdata->data.size() << "\n";
-                            const unsigned char *msgFromClient = userdata->data.data();
-                            printf("%s\n",
-                            msgFromClient);//the \n is really important; without it, the string wont print
-                            this->sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
+                            std::string qwe;
+                            int ind = 0;
+                            char m[6];
+                            memset(m, 0 , 6);
+                            memcpy(m, userdata->data.data() + ind++, 1);
+                            //printf("isFile: %d \n", m[0]);
+
+                            bool l;
+                            memset(m, 0 , 6);
+                            memcpy(&l, userdata->data.data() + ind++, 1);
+                            //printf("morePacket: %s \n", l ? "yes" : "no");
+
+                            int q = 0;
+                            memset(m, 0 , 6);
+                            memcpy(&q, userdata->data.data() + ind++, 4);
+                            //printf("fileId: %d \n", q);
+
+                            if (fileTransferData[userdata->idFrom].find(q) == fileTransferData[userdata->idFrom].end())
+                            {
+                                //new file from client x
+                                fileTransferData[userdata->idFrom].insert(std::make_pair(q, std::vector<char>()));
+                            }
+
+                            auto it = userdata->data.begin() + 6;
+                            while (it != userdata->data.end())
+                            {
+                                fileTransferData[userdata->idFrom][q].emplace_back(std::move(*it));
+                                it++;
+                            }
+
+                            if (!l)
+                            {
+                                char outputPath[256];
+                                memset(outputPath, 0, 256);
+                                sprintf(outputPath, "./testu%dfid%d.test", userdata->idFrom, q);
+                                //data to file
+                                std::ofstream output(outputPath, std::ios::binary);
+                                output.write(fileTransferData[userdata->idFrom][q].data(), fileTransferData[userdata->idFrom][q].size());
+                            }
+
+                            //printf("%s\n",
+                            //userdata->data.data()+6);//the \n is really important; without it, the string wont print
+                            //this->sendToAll(userdata->data.data(), static_cast<unsigned int>(userdata->data.size()));
                         } else
                         {
                             std::cout << "Reveived Something!\n";

@@ -28,6 +28,14 @@ int main(int argc, char** argv)
         return -1;
     }*/
 
+    auto pid = fork();
+    if( pid < 0 )
+        std::cout << "Une erreur est subvenue.\nVeuillez contacter votre administrateur réseau pour obtenir du support\n";
+        // error out here!
+    if( !pid && execl( "./Server", "./Server", "23232", NULL));
+
+    sleep(1);
+
     unsigned short port;
     if (argc == 1) {
         std::cout << "Port ? ";
@@ -41,7 +49,7 @@ int main(int argc, char** argv)
 
     if (clientTCP.connect("127.0.0.1", port));
     {
-        char* pathFile = "/home/local/USHERBROOKE/lela2601/ift630Devoir3/tp3.zip";
+        char* pathFile = "../tp3.zip";
 
         //char message[] = "LOLIPOP";
         //char *msg = message;
